@@ -13,6 +13,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setVersion('1.0')
+    .setTitle('Udemy-Course')
     .addServer('http://localhost:3000')
     .build()
     
