@@ -41,11 +41,8 @@ export class UsersController {
         return this.userService.findAll(getUserParamDto, limit, page)
     }
     @Post()
-    public createUser(
-        @Body() createUserDto:CreateUserDto, 
-    ) {
-        console.log(createUserDto)
-        return 'You created user'
+    public createUser(@Body() createUserDto:CreateUserDto, ) {
+        return this.userService.createUser(createUserDto)
     }
 
     @Patch()
