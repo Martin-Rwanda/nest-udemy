@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserService } from 'src/users/providers/users.service';
 import { Repository } from 'typeorm';
 import { Post } from '../post.entity';
@@ -10,28 +10,38 @@ export class PostsService {
     constructor(
         private readonly usersService: UserService,
         @InjectRepository(Post)
-        private readonly postRepository: Repository<Post>
+        private readonly postRepository: Repository<Post>,
     ){}
-    public findAll(userId: string){
+    async findAll(userId: number){
         const user = this.usersService.findOneById(userId)
-        return [
-            {
-                user: user,
-                title: 'Test titlle',
-                content: 'Test Content'
-            },
-            {
-                user: user,
-                title: 'Test titlle 2',
-                content: 'Test Content 2'
+        let posts = await this.postRepository.find({
+            relations: {
+                metaOptions: true,
+                author: true
             }
-        ]
+        })
+
+        return posts
     }
 
-    async createPost(createPostDto: CreatePostDto){
-        let newPost = this.postRepository.create(createPostDto);
-        newPost = await this.postRepository.save(newPost);
+    async createPost(createPostDto: CreatePostDto) {
+        let author = await this.usersService.findOneById(createPostDto.authorId)
 
-        return newPost
+        if (!author) {
+            throw new NotFoundException('Author not found');
+        }
+        
+        return this.postRepository.save(
+            this.postRepository.create({
+                ...createPostDto,
+                author
+            })
+        );
+    }
+
+    async delete(id: number) {
+        await this.postRepository.delete(id);
+
+        return { deleted: true, id };
     }
 }

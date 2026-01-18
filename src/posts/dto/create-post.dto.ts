@@ -1,7 +1,7 @@
-import { IsArray, IsEnum, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, MaxLength, MinLength, ValidateNested } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, MaxLength, MinLength, ValidateNested } from "class-validator";
 import { postStatus } from "../enums/postStatus.enum";
 import { postType } from "../enums/postType.enum";
-import { createPostMetaOptionDto } from "./create-post-meta-options.dto";
+import { createPostMetaOptionDto } from "../../meta-options/dtos/create-post-meta-options.dto";
 import { Type } from "class-transformer";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
@@ -72,7 +72,7 @@ export class CreatePostDto {
     })
     @IsISO8601()
     @IsOptional()
-    publishOn?: Date;
+    publishOn?: string;
 
     @ApiPropertyOptional({
         example: ["nestjs", "typescript"],
@@ -85,27 +85,30 @@ export class CreatePostDto {
     tags?: string[];
 
     @ApiPropertyOptional({
-        type: "array",
+        type: "object",
         required: false,
         items: {
             type: 'object',
             properties: {
-                key: {
-                    type: 'string',
-                    description: 'The key can be any string identifies for your meta option',
-                    example: 'sidebarEnabled'
-                },
-                value: {
-                    type: 'any',
-                    description: 'Any value that you want to save to the key',
-                    example: true
+                metavalue: {
+                    type: 'json',
+                    description: 'The metaValue is a JSON string',
+                    example: '{"sidebarEnabled": true}'
                 }
             }
         },
     })
     @IsOptional()
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(()=> createPostMetaOptionDto)
-    metaOptions?:createPostMetaOptionDto[]
+    @ValidateNested()
+    @Type(() => createPostMetaOptionDto)
+    metaOptions?: createPostMetaOptionDto;
+
+    @ApiProperty({
+        type: 'integer',
+        required: true,
+        example: 1
+    })
+    @IsNotEmpty()
+    @IsInt()
+    authorId: number
 }
